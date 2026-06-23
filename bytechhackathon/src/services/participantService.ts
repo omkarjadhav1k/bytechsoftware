@@ -185,21 +185,25 @@ export const participantService = {
     }
   },
 
-  // 2. Razorpay Order Creation via Edge Function
+  // 2. Razorpay Order Creation via Serverless API
   async createRazorpayOrder(participantId: string): Promise<{ order_id: string; key_id: string; amount: number }> {
-    if (isSupabaseConfigured) {
-      try {
-        const { data, error } = await supabase.functions.invoke('create-razorpay-order', {
-          body: { participantId, amount: 1 }
-        })
+    try {
+      const response = await fetch(`${window.location.origin}/api/create-razorpay-order`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ participantId, amount: 1 }), // ₹1 for live testing
+      })
 
-        if (error) throw new Error(error.message)
-        return data
-      } catch (err: any) {
-        console.error("Supabase edge function error, falling back to mock order:", err)
-        return this.createMockRazorpayOrder(participantId)
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.statusMessage || 'Failed to create order via Vercel server API')
       }
-    } else {
+
+      return await response.json()
+    } catch (err: any) {
+      console.warn("Vercel server API order creation failed, falling back to local mock order:", err)
       return this.createMockRazorpayOrder(participantId)
     }
   },
@@ -208,7 +212,7 @@ export const participantService = {
   createMockRazorpayOrder(participantId: string) {
     return {
       order_id: `order_mock_${participantId.substring(0, 8)}_${Math.random().toString(36).substring(2, 6)}`,
-      key_id: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_mockKey12345',
+      key_id: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_T56Xgtqtsgt6Gf',
       amount: 100 // ₹1 (100 paise)
     }
   },
@@ -222,21 +226,45 @@ export const participantService = {
       participant_db_id: string;
     }
   ): Promise<Participant> {
-    if (isSupabaseConfigured) {
-      try {
-        // 1. Try calling the Edge Function first
-        const { data, error } = await supabase.functions.invoke('verify-payment', {
-          body: paymentDetails
-        })
+    try {
+      // 1. Try calling the Vercel Server API verify endpoint first
+      const response = await fetch(`${window.location.origin}/api/verify-payment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(paymentDetails),
+      })
 
-        if (!error && data?.success) {
-          return this.getParticipantById(paymentDetails.participant_db_id)
+      if (response.ok) {
+        const result = await response.json()
+        if (result.success && result.participant) {
+          // Send welcome email directly using the local API proxy
+          try {
+            await fetch(`${window.location.origin}/api/send-email`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                to: result.participant.email,
+                subject: "Welcome to ByTech Virtual Hackathon 2026",
+                html: getEmailHtml(result.participant),
+              }),
+            })
+          } catch (emailErr) {
+            console.error("Direct welcome email failed to send:", emailErr)
+          }
+          return result.participant
         }
-        if (error) throw new Error(error.message)
-      } catch (err: any) {
-        console.warn("Edge Function invocation failed, falling back to direct frontend confirmation:", err)
       }
+      const errData = await response.json().catch(() => ({}))
+      throw new Error(errData.statusMessage || 'Server API verification failed')
+    } catch (err: any) {
+      console.warn("Vercel server API verification failed, trying direct frontend confirmation:", err)
+    }
 
+    if (isSupabaseConfigured) {
       // 2. FALLBACK: Direct frontend update to Supabase database (requires RLS update permission or disabled RLS)
       const { data: updated, error: updateError } = await supabase
         .from('participants')

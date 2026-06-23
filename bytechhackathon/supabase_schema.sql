@@ -73,3 +73,12 @@ FOR ALL
 TO authenticated 
 USING (true) 
 WITH CHECK (true);
+
+-- Policy 4: Allow public updates of payment details to transition pending records to paid (frontend fallback)
+CREATE POLICY "Allow public payment updates"
+ON public.participants
+FOR UPDATE
+TO anon
+USING (payment_status = 'pending')
+WITH CHECK (payment_status = 'paid' AND payment_id IS NOT NULL);
+
