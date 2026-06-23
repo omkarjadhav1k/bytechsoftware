@@ -99,7 +99,7 @@ export const Success: React.FC = () => {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500 font-semibold">Amount Paid</span>
-                  <span className="text-slate-900 font-extrabold">₹99.00</span>
+                  <span className="text-slate-900 font-extrabold">₹1.00</span>
                 </div>
               </div>
 

@@ -227,7 +227,7 @@ serve(async (req) => {
               </div>
               <div class="content">
                 <p class="greeting">Hi ${participant.full_name},</p>
-                <p>Thank you for registering! Your payment of <strong>₹99</strong> has been successfully processed, and your registration is confirmed.</p>
+                <p>Thank you for registering! Your payment of <strong>₹1</strong> has been successfully processed, and your registration is confirmed.</p>
                 
                 <div class="badge" align="center">
                   <div class="badge-title">Your Unique Participant ID</div>

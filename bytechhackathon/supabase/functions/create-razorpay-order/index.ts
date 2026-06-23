@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const { participantId, amount = 99 } = await req.json();
+    const { participantId, amount = 1 } = await req.json();
 
     if (!participantId) {
       return new Response(

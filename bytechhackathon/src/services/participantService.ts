@@ -190,7 +190,7 @@ export const participantService = {
     if (isSupabaseConfigured) {
       try {
         const { data, error } = await supabase.functions.invoke('create-razorpay-order', {
-          body: { participantId, amount: 99 }
+          body: { participantId, amount: 1 }
         })
 
         if (error) throw new Error(error.message)
@@ -209,7 +209,7 @@ export const participantService = {
     return {
       order_id: `order_mock_${participantId.substring(0, 8)}_${Math.random().toString(36).substring(2, 6)}`,
       key_id: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_mockKey12345',
-      amount: 9900 // ₹99 (9900 paise)
+      amount: 100 // ₹1 (100 paise)
     }
   },
 
@@ -339,7 +339,7 @@ export const participantService = {
         totalRegistrations: participants.length,
         paidRegistrations: participants.filter((p: any) => p.payment_status === 'paid').length,
         pendingRegistrations: participants.filter((p: any) => p.payment_status === 'pending').length,
-        totalRevenue: participants.filter((p: any) => p.payment_status === 'paid').length * 99
+        totalRevenue: participants.filter((p: any) => p.payment_status === 'paid').length * 1
       }
       return stats
     } else {
@@ -349,7 +349,7 @@ export const participantService = {
         totalRegistrations: participants.length,
         paidRegistrations: paidCount,
         pendingRegistrations: participants.filter(p => p.payment_status === 'pending').length,
-        totalRevenue: paidCount * 99
+        totalRevenue: paidCount * 1
       }
     }
   },
@@ -428,7 +428,7 @@ function getEmailHtml(participant: Participant): string {
           <p style="margin:5px 0 0 0; font-size:14px; opacity:0.9;">Registration Confirmed - ByTech Software Solutions</p>
         </div>
         <p style="font-size:16px; margin-top:28px;">Hi ${participant.full_name},</p>
-        <p>Thank you for registering! Your payment of <strong>₹99</strong> has been successfully processed, and your registration is confirmed.</p>
+        <p>Thank you for registering! Your payment of <strong>₹1</strong> has been successfully processed, and your registration is confirmed.</p>
         <div class="badge">
           <div style="font-size:11px; color:#6b7280; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Your Unique Participant ID</div>
           <div style="font-size:22px; color:#1e3a8a; font-weight:bold; font-family:monospace;">${participant.participant_id}</div>

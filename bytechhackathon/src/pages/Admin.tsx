@@ -286,7 +286,7 @@ export const Admin: React.FC = () => {
     if (p.payment_status === 'paid') {
       message = `Hi ${p.full_name}, thank you for successfully registering for the ByTech Virtual Hackathon 2026. Your Participant ID is ${p.participant_id}. Make sure your IDE and Git environments are ready for the 3-hour virtual sprint on July 10th. We look forward to seeing you code! Best regards, ByTech Software Solutions Team.`
     } else {
-      message = `Hi ${p.full_name}, this is the ByTech Software Solutions team. We noticed you started registering for the ByTech Virtual Hackathon 2026, but your payment of ₹99 is pending. Don't miss out on ₹3,500+ in cash prizes, finalist certificates for the top 10, and participation certificates for everyone! Complete your registration by finishing the payment here. Let us know if you face any issues. Thanks!`
+      message = `Hi ${p.full_name}, this is the ByTech Software Solutions team. We noticed you started registering for the ByTech Virtual Hackathon 2026, but your payment of ₹1 is pending. Don't miss out on ₹3,500+ in cash prizes, finalist certificates for the top 10, and participation certificates for everyone! Complete your registration by finishing the payment here. Let us know if you face any issues. Thanks!`
     }
     
     const encodedMessage = encodeURIComponent(message)

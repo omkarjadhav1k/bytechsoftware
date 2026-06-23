@@ -13,7 +13,7 @@ const events: TimelineEvent[] = [
   {
     date: "June 22, 2026",
     title: "Registrations Open",
-    description: "Secure your individual slot for ₹99 and begin prepping your IDE.",
+    description: "Secure your individual slot for ₹1 and begin prepping your IDE.",
     icon: <UserCheck className="w-5 h-5" />
   },
   {

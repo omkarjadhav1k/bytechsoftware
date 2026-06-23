@@ -99,7 +99,7 @@ export const Landing: React.FC = () => {
             </div>
             <div className="flex items-center gap-2 bg-white/70 px-4 py-2 rounded-lg border border-slate-200 shadow-xs">
               <Trophy className="w-5 h-5 text-yellow-500" />
-              <span className="text-xs sm:text-sm font-semibold text-slate-700">₹99 Registration Fee</span>
+              <span className="text-xs sm:text-sm font-semibold text-slate-700">₹1 Registration Fee</span>
             </div>
           </motion.div>
 
@@ -237,7 +237,7 @@ export const Landing: React.FC = () => {
               onClick={() => navigate('/register')}
               className="bg-white hover:bg-slate-100 text-primary-900 px-8 py-3 text-base shadow-md cursor-pointer"
             >
-              Register Now (₹99)
+              Register Now (₹1)
             </Button>
             <a
               href="mailto:support@bytechsoftware.com"
