@@ -145,7 +145,7 @@ export const participantService = {
         if (result.success && result.participant) {
           // Send welcome email directly using the local API proxy
           try {
-            await fetch(`${window.location.origin}/api/send-email`, {
+            const emailRes = await fetch(`${window.location.origin}/api/send-email`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -156,6 +156,12 @@ export const participantService = {
                 html: getEmailHtml(result.participant),
               }),
             })
+            if (!emailRes.ok) {
+              const errBody = await emailRes.json().catch(() => ({}))
+              console.error("Welcome email delivery failed:", errBody)
+            } else {
+              console.log("Welcome email sent successfully!")
+            }
           } catch (emailErr) {
             console.error("Direct welcome email failed to send:", emailErr)
           }
@@ -189,7 +195,7 @@ export const participantService = {
 
       // 3. Send welcome email directly using the local API proxy (bypassing browser CORS)
       try {
-        await fetch(`${window.location.origin}/api/send-email`, {
+        const emailRes = await fetch(`${window.location.origin}/api/send-email`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -200,6 +206,12 @@ export const participantService = {
             html: getEmailHtml(updated),
           }),
         })
+        if (!emailRes.ok) {
+          const errBody = await emailRes.json().catch(() => ({}))
+          console.error("Fallback welcome email delivery failed:", errBody)
+        } else {
+          console.log("Fallback welcome email sent successfully!")
+        }
       } catch (emailErr) {
         console.error("Direct welcome email failed to send:", emailErr)
       }
