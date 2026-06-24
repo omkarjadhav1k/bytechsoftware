@@ -33,13 +33,6 @@ export const Admin: React.FC = () => {
 
   // 1. Check existing session on load
   useEffect(() => {
-    const mockSession = sessionStorage.getItem('bytech_admin_session')
-    if (mockSession === 'active') {
-      setIsAdminLoggedIn(true)
-      fetchDashboardData()
-      return
-    }
-
     if (isSupabaseConfigured) {
       supabase.auth.getSession().then((res: any) => {
         const session = res.data?.session
@@ -48,6 +41,13 @@ export const Admin: React.FC = () => {
           fetchDashboardData()
         }
       })
+    } else {
+      // Mock session for local development
+      const mockSession = sessionStorage.getItem('bytech_admin_session')
+      if (mockSession === 'active') {
+        setIsAdminLoggedIn(true)
+        fetchDashboardData()
+      }
     }
   }, [])
 
@@ -75,16 +75,8 @@ export const Admin: React.FC = () => {
     setIsLoading(true)
 
     try {
-      // 1. Master admin bypass (works in both mock and Supabase configurations)
-      if (loginEmail === 'admin@bytech.com' && loginPassword === 'admin123') {
-        sessionStorage.setItem('bytech_admin_session', 'active')
-        setIsAdminLoggedIn(true)
-        fetchDashboardData()
-        return
-      }
-
-      // 2. Standard Supabase Auth login
       if (isSupabaseConfigured) {
+        // Standard secure Supabase Auth login (requires a real user created in Supabase Dashboard)
         const { error } = await supabase.auth.signInWithPassword({
           email: loginEmail,
           password: loginPassword
@@ -94,7 +86,14 @@ export const Admin: React.FC = () => {
         setIsAdminLoggedIn(true)
         fetchDashboardData()
       } else {
-        throw new Error('Invalid email or password. Use admin@bytech.com / admin123.')
+        // Mock Login for local development only
+        if (loginEmail === 'admin@bytech.com' && loginPassword === 'admin123') {
+          sessionStorage.setItem('bytech_admin_session', 'active')
+          setIsAdminLoggedIn(true)
+          fetchDashboardData()
+        } else {
+          throw new Error('Invalid email or password. Use admin@bytech.com / admin123.')
+        }
       }
     } catch (err: any) {
       setLoginError(err.message || 'Authentication failed.')
