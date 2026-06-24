@@ -344,7 +344,7 @@ serve(async (req) => {
             Authorization: `Bearer ${resendApiKey}`,
           },
           body: JSON.stringify({
-            from: "ByTech Hackathon <no-reply@resend.dev>",
+            from: "ByTech Hackathon <onboarding@resend.dev>",
             to: participant.email,
             subject: "Welcome to ByTech Virtual Hackathon 2026",
             html: emailHtml,
