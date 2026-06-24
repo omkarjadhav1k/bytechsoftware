@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Try to get keys from Vite environment variables first
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || ''
+// Try to get keys from Vite environment variables first, then default to live values
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://nhnraalsnjnurzygwdic.supabase.co'
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_2bpFA0NK7XQqDSOnJkT9Jw_EYvl8hhe'
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
 
