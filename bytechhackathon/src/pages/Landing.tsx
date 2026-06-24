@@ -8,10 +8,31 @@ import Button from '../components/Button'
 import PrizePool from '../components/PrizePool'
 import Timeline from '../components/Timeline'
 import FaqAccordion from '../components/FaqAccordion'
+import { participantService } from '../services/participantService'
+
+// Prevent double logging on mount (e.g. React StrictMode in development)
+let isPageViewLogged = false
 
 export const Landing: React.FC = () => {
   const navigate = useNavigate()
   const location = useLocation()
+
+  // Track page view and click events for analytics
+  useEffect(() => {
+    if (!isPageViewLogged) {
+      isPageViewLogged = true
+      participantService.logAnalyticsEvent('view')
+    }
+
+    const handleWindowClick = () => {
+      participantService.logAnalyticsEvent('click')
+    }
+
+    window.addEventListener('click', handleWindowClick)
+    return () => {
+      window.removeEventListener('click', handleWindowClick)
+    }
+  }, [])
 
   useEffect(() => {
     if (location.state && (location.state as any).scrollTo) {

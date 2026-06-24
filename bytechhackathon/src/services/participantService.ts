@@ -29,6 +29,16 @@ export interface AdminStats {
 
 const MOCK_PARTICIPANTS_KEY = 'bytech_hackathon_participants'
 const MOCK_SEQ_KEY = 'bytech_hackathon_seq'
+const MOCK_ANALYTICS_VIEWS_KEY = 'bytech_hackathon_views'
+const MOCK_ANALYTICS_CLICKS_KEY = 'bytech_hackathon_clicks'
+
+// Initialize BroadcastChannel for local/demo environment real-time updates
+export let analyticsChannel: BroadcastChannel | null = null;
+try {
+  analyticsChannel = new BroadcastChannel('bytech_hackathon_analytics');
+} catch (e) {
+  console.warn("BroadcastChannel is not supported or failed to initialize", e);
+}
 
 // Seed empty array for local mock mode to start fresh
 const seedMockData = () => {
@@ -311,6 +321,70 @@ export const participantService = {
     } else {
       return this.getMockParticipants()
     }
+  },
+
+  // 7. Log Analytics Event (view or click)
+  async logAnalyticsEvent(eventType: 'view' | 'click'): Promise<void> {
+    // 1. Broadcast locally via BroadcastChannel (for instant local cross-tab updates)
+    if (analyticsChannel) {
+      analyticsChannel.postMessage({ type: 'live_event', eventType, timestamp: new Date().toISOString() });
+    }
+
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await supabase
+          .from('hackathon_events')
+          .insert([{ event_type: eventType }]);
+        if (error) {
+          console.warn('Supabase analytics log failed, falling back to local storage', error);
+          this.logLocalAnalyticsEvent(eventType);
+        }
+      } catch (err) {
+        console.warn('Supabase analytics log error, falling back to local storage', err);
+        this.logLocalAnalyticsEvent(eventType);
+      }
+    } else {
+      this.logLocalAnalyticsEvent(eventType);
+    }
+  },
+
+  // Helper to log analytics locally
+  logLocalAnalyticsEvent(eventType: 'view' | 'click'): void {
+    const key = eventType === 'view' ? MOCK_ANALYTICS_VIEWS_KEY : MOCK_ANALYTICS_CLICKS_KEY;
+    const current = parseInt(localStorage.getItem(key) || '0', 10);
+    localStorage.setItem(key, (current + 1).toString());
+  },
+
+  // 8. Retrieve Analytics Statistics
+  async getAnalyticsStats(): Promise<{ views: number; clicks: number }> {
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('hackathon_events')
+          .select('event_type');
+
+        if (error) throw error;
+
+        const stats = {
+          views: data.filter((e: any) => e.event_type === 'view').length,
+          clicks: data.filter((e: any) => e.event_type === 'click').length
+        };
+        return stats;
+      } catch (err) {
+        console.warn('Failed to fetch from Supabase analytics, using local mock data:', err);
+        return this.getLocalAnalyticsStats();
+      }
+    } else {
+      return this.getLocalAnalyticsStats();
+    }
+  },
+
+  // Helper to get local analytics counts
+  getLocalAnalyticsStats(): { views: number; clicks: number } {
+    return {
+      views: parseInt(localStorage.getItem(MOCK_ANALYTICS_VIEWS_KEY) || '0', 10),
+      clicks: parseInt(localStorage.getItem(MOCK_ANALYTICS_CLICKS_KEY) || '0', 10)
+    };
   },
 
   // Helper local storage mock functions

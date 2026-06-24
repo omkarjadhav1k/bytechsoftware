@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -10,10 +10,19 @@ import Footer from '../layouts/Footer'
 import Button from '../components/Button'
 import Input from '../components/Input'
 import { participantService } from '../services/participantService'
+import { INDIAN_COLLEGES } from '../services/collegesData'
 
 
 // Indian Mobile Number Regex (10 digits starting with 6-9)
 const phoneRegex = /^[6-9]\d{9}$/
+
+
+
+const POPULAR_SKILLS = [
+  "React", "Node.js", "Python", "Java", "C++", 
+  "JavaScript", "TypeScript", "SQL", "Tailwind CSS", 
+  "Next.js", "Django", "Git", "Docker", "Machine Learning"
+]
 
 const personalSchema = z.object({
   full_name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -64,36 +73,124 @@ const loadRazorpay = (): Promise<boolean> => {
   })
 }
 
+const FORM_STORAGE_KEY = 'bth2026_registration_form'
+const STEP_STORAGE_KEY = 'bth2026_registration_step'
+
+function getSavedFormData(): Partial<FormData> {
+  try {
+    const saved = sessionStorage.getItem(FORM_STORAGE_KEY)
+    return saved ? JSON.parse(saved) : {}
+  } catch { return {} }
+}
+
 export const Register: React.FC = () => {
-  const [currentStep, setCurrentStep] = useState(1)
+  const [currentStep, setCurrentStep] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem(STEP_STORAGE_KEY)
+      return saved ? Math.min(parseInt(saved, 10), 4) : 1
+    } catch { return 1 }
+  })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [serverError, setServerError] = useState<string | null>(null)
+  const [sameAsContact, setSameAsContact] = useState(false)
+  const [showCollegeSuggestions, setShowCollegeSuggestions] = useState(false)
   const navigate = useNavigate()
+
+  const savedData = getSavedFormData()
 
   const {
     register,
     handleSubmit,
     trigger,
     getValues,
+    watch,
+    setValue,
     formState: { errors }
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      full_name: '',
-      email: '',
-      whatsapp_number: '',
-      contact_number: '',
-      college_name: '',
-      university_name: '',
-      degree: '',
-      branch: '',
-      study_year: '',
-      github_url: '',
-      linkedin_url: '',
-      skills: '',
+      full_name: savedData.full_name || '',
+      email: savedData.email || '',
+      whatsapp_number: savedData.whatsapp_number || '',
+      contact_number: savedData.contact_number || '',
+      college_name: savedData.college_name || '',
+      university_name: savedData.university_name || '',
+      degree: savedData.degree || '',
+      branch: savedData.branch || '',
+      study_year: savedData.study_year || '',
+      github_url: savedData.github_url || '',
+      linkedin_url: savedData.linkedin_url || '',
+      skills: savedData.skills || '',
       agree: false
     }
   })
+
+  // Predefined colleges filter logic
+  const collegeInputValue = watch('college_name') || ''
+  const filteredColleges = INDIAN_COLLEGES.filter(college => 
+    college.toLowerCase().includes(collegeInputValue.toLowerCase()) &&
+    college.toLowerCase() !== collegeInputValue.toLowerCase()
+  ).slice(0, 5)
+
+  const handleSelectCollege = (college: string) => {
+    setValue('college_name', college, { shouldValidate: true })
+    
+    // Auto-map university name
+    let university = ''
+    if (college.includes('IIT') || college.includes('NIT') || college.includes('BITS Pilani') || college.includes('IIIT') || college.includes('PES University')) {
+      university = 'Autonomous'
+    } else if (college.includes('Mumbai') || college.includes('VJTI')) {
+      university = 'Mumbai University'
+    } else if (college.includes('Pune') || college.includes('COEP') || college.includes('DY Patil')) {
+      university = 'Savitribai Phule Pune University'
+    } else if (college.includes('VIT')) {
+      university = 'Vellore Institute of Technology (Deemed University)'
+    } else if (college.includes('SRM')) {
+      university = 'SRM Institute of Science and Technology'
+    } else if (college.includes('Manipal')) {
+      university = 'Manipal Academy of Higher Education'
+    } else if (college.includes('Delhi') || college.includes('DTU') || college.includes('NSUT')) {
+      university = 'Delhi Technological University'
+    }
+    
+    if (university) {
+      setValue('university_name', university, { shouldValidate: true })
+    }
+    setShowCollegeSuggestions(false)
+  }
+
+  const handleQuickAddSkill = (skill: string) => {
+    const currentSkills = getValues('skills') || ''
+    let skillsList = currentSkills.split(',').map(s => s.trim()).filter(Boolean)
+    
+    if (skillsList.some(s => s.toLowerCase() === skill.toLowerCase())) {
+      skillsList = skillsList.filter(s => s.toLowerCase() !== skill.toLowerCase())
+    } else {
+      skillsList.push(skill)
+    }
+    
+    setValue('skills', skillsList.join(', '), { shouldValidate: true })
+  }
+
+  // Persist form data to sessionStorage on every change
+  const formValues = watch()
+  useEffect(() => {
+    const { agree, ...dataToSave } = formValues
+    sessionStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(dataToSave))
+  }, [formValues])
+
+  // Persist current step
+  useEffect(() => {
+    sessionStorage.setItem(STEP_STORAGE_KEY, String(currentStep))
+  }, [currentStep])
+
+  // Sync WhatsApp number when "Same as Contact" is checked
+  const contactNumber = watch('contact_number')
+  useEffect(() => {
+    if (sameAsContact) {
+      setValue('whatsapp_number', contactNumber, { shouldValidate: true })
+    }
+  }, [sameAsContact, contactNumber, setValue])
 
   const handleNext = async () => {
     let fieldsToValidate: Array<keyof FormData> = []
@@ -157,6 +254,9 @@ export const Register: React.FC = () => {
               participant_db_id: participantDbId
             })
 
+            // Clear saved form data on success
+            sessionStorage.removeItem(FORM_STORAGE_KEY)
+            sessionStorage.removeItem(STEP_STORAGE_KEY)
             navigate('/success', { state: { participant: confirmedParticipant } })
           } catch (err: any) {
             setServerError(err.message || 'Payment verification failed. Please contact support.')
@@ -293,16 +393,6 @@ export const Register: React.FC = () => {
                     </div>
 
                     <Input
-                      label="WhatsApp Number"
-                      type="tel"
-                      placeholder="10-digit mobile number"
-                      required
-                      error={errors.whatsapp_number?.message}
-                      helperText="For event updates"
-                      {...register('whatsapp_number')}
-                    />
-
-                    <Input
                       label="Contact Number"
                       type="tel"
                       placeholder="10-digit calling number"
@@ -311,6 +401,35 @@ export const Register: React.FC = () => {
                       helperText="Primary contact number"
                       {...register('contact_number')}
                     />
+
+                    <div>
+                      <Input
+                        label="WhatsApp Number"
+                        type="tel"
+                        placeholder="10-digit mobile number"
+                        required
+                        error={errors.whatsapp_number?.message}
+                        helperText="For event updates"
+                        disabled={sameAsContact}
+                        {...register('whatsapp_number')}
+                      />
+                      <label className="flex items-center gap-2 mt-2 cursor-pointer select-none group">
+                        <input
+                          type="checkbox"
+                          checked={sameAsContact}
+                          onChange={(e) => {
+                            setSameAsContact(e.target.checked)
+                            if (e.target.checked) {
+                              setValue('whatsapp_number', getValues('contact_number'), { shouldValidate: true })
+                            }
+                          }}
+                          className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500 cursor-pointer accent-blue-600"
+                        />
+                        <span className="text-xs text-slate-500 group-hover:text-slate-700 transition-colors">
+                          Same as Contact Number
+                        </span>
+                      </label>
+                    </div>
                   </div>
                 </motion.div>
               )}
@@ -330,14 +449,39 @@ export const Register: React.FC = () => {
                   </h3>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="md:col-span-2">
+                    <div className="md:col-span-2 relative">
                       <Input
                         label="College Name"
-                        placeholder="Enter your college/institute name"
+                        placeholder="Enter your college/institute name (or search & select)"
                         required
                         error={errors.college_name?.message}
                         {...register('college_name')}
+                        onFocus={() => setShowCollegeSuggestions(true)}
+                        onBlur={(e) => {
+                          const registerOnBlur = register('college_name').onBlur
+                          if (registerOnBlur) registerOnBlur(e)
+                          setTimeout(() => setShowCollegeSuggestions(false), 200)
+                        }}
+                        autoComplete="off"
                       />
+                      
+                      {showCollegeSuggestions && filteredColleges.length > 0 && (
+                        <div className="absolute left-0 right-0 top-[calc(100%-8px)] mt-2 bg-white border border-slate-200 rounded-xl shadow-lg z-20 overflow-hidden divide-y divide-slate-100 max-h-48 overflow-y-auto no-scrollbar">
+                          {filteredColleges.map((college) => (
+                            <button
+                              key={college}
+                              type="button"
+                              onMouseDown={(e) => {
+                                e.preventDefault()
+                                handleSelectCollege(college)
+                              }}
+                              className="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors block cursor-pointer"
+                            >
+                              {college}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div className="md:col-span-2">
@@ -428,6 +572,29 @@ export const Register: React.FC = () => {
                         error={errors.skills?.message}
                         {...register('skills')}
                       />
+                      <div className="mt-2.5">
+                        <span className="text-[11px] font-bold text-slate-400 block mb-1.5 uppercase tracking-wider">Quick add skills:</span>
+                        <div className="flex flex-wrap gap-2">
+                          {POPULAR_SKILLS.map(skill => {
+                            const current = getValues('skills') || ''
+                            const isAdded = current.split(',').map(s => s.trim().toLowerCase()).includes(skill.toLowerCase())
+                            return (
+                              <button
+                                key={skill}
+                                type="button"
+                                onClick={() => handleQuickAddSkill(skill)}
+                                className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border transition-all cursor-pointer ${
+                                  isAdded 
+                                    ? 'bg-primary-50 border-primary-200 text-primary-700' 
+                                    : 'bg-white border-slate-200 hover:border-slate-300 text-slate-600 hover:text-slate-800'
+                                }`}
+                              >
+                                {isAdded ? `✓ ${skill}` : `+ ${skill}`}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
                     </div>
 
                     <div className="md:col-span-2 pt-2">

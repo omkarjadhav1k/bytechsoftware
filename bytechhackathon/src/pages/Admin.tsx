@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { 
   Users, CheckCircle2, AlertCircle, IndianRupee, Search, Filter, 
-  Download, LogOut, MessageSquare, ShieldCheck, Mail, GraduationCap 
+  Download, LogOut, MessageSquare, ShieldCheck, Mail, GraduationCap,
+  Eye, MousePointerClick, Activity, X
 } from 'lucide-react'
 import Navbar from '../layouts/Navbar'
 import Footer from '../layouts/Footer'
@@ -11,6 +12,12 @@ import Input from '../components/Input'
 import { participantService } from '../services/participantService'
 import type { Participant, AdminStats } from '../services/participantService'
 import { isSupabaseConfigured, supabase } from '../services/supabase'
+
+interface LiveActivity {
+  id: string
+  type: 'view' | 'click'
+  timestamp: Date
+}
 
 export const Admin: React.FC = () => {
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false)
@@ -31,6 +38,17 @@ export const Admin: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'paid' | 'pending'>('all')
   const [isLoading, setIsLoading] = useState(false)
 
+  // Analytics states
+  const [analytics, setAnalytics] = useState<{ views: number; clicks: number }>({ views: 0, clicks: 0 })
+  const [activityLog, setActivityLog] = useState<LiveActivity[]>([])
+  const [selectedParticipant, setSelectedParticipant] = useState<Participant | null>(null)
+
+  // Helper to format time with millisecond precision
+  const formatTimeWithMs = (date: Date) => {
+    const pad = (n: number, size = 2) => String(n).padStart(size, '0')
+    return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.${pad(date.getMilliseconds(), 3)}`
+  }
+
   // 1. Check existing session on load
   useEffect(() => {
     if (isSupabaseConfigured) {
@@ -50,6 +68,99 @@ export const Admin: React.FC = () => {
       }
     }
   }, [])
+
+  // Fetch and subscribe to live analytics when admin is logged in
+  useEffect(() => {
+    if (!isAdminLoggedIn) return
+
+    // 1. Load initial analytics stats
+    const loadAnalytics = async () => {
+      try {
+        const data = await participantService.getAnalyticsStats()
+        setAnalytics(data)
+      } catch (err) {
+        console.error("Failed to load analytics stats:", err)
+      }
+    }
+    loadAnalytics()
+
+    // Helper to log live activity item locally in state
+    const addLiveActivity = (type: 'view' | 'click', timestamp: Date) => {
+      setActivityLog((prev) => [
+        {
+          id: Math.random().toString(36).substring(2, 9),
+          type,
+          timestamp,
+        },
+        ...prev.slice(0, 4), // keep last 5 events
+      ])
+    }
+
+    // 2. Local BroadcastChannel subscription (only when Supabase is NOT configured)
+    let localChannel: BroadcastChannel | null = null
+    if (!isSupabaseConfigured) {
+      try {
+        localChannel = new BroadcastChannel('bytech_hackathon_analytics')
+        localChannel.onmessage = (event) => {
+          if (event.data && event.data.type === 'live_event') {
+            const { eventType, timestamp } = event.data
+            setAnalytics((prev) => ({
+              ...prev,
+              views: eventType === 'view' ? prev.views + 1 : prev.views,
+              clicks: eventType === 'click' ? prev.clicks + 1 : prev.clicks,
+            }))
+            addLiveActivity(eventType, new Date(timestamp))
+          }
+        }
+      } catch (e) {
+        console.warn("BroadcastChannel not supported in this environment", e)
+      }
+    }
+
+    // 3. Supabase Realtime subscription (only when Supabase IS configured)
+    let supabaseSubscription: any = null
+    if (isSupabaseConfigured) {
+      try {
+        supabaseSubscription = supabase
+          .channel('hackathon_analytics_realtime')
+          .on(
+            'postgres_changes',
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'hackathon_events',
+            },
+            (payload: any) => {
+              if (payload.new) {
+                const eventType = payload.new.event_type as 'view' | 'click'
+                const timestamp = new Date(payload.new.created_at || new Date())
+                
+                // Update stats
+                setAnalytics((prev) => ({
+                  ...prev,
+                  views: eventType === 'view' ? prev.views + 1 : prev.views,
+                  clicks: eventType === 'click' ? prev.clicks + 1 : prev.clicks,
+                }))
+                
+                addLiveActivity(eventType, timestamp)
+              }
+            }
+          )
+          .subscribe()
+      } catch (err) {
+        console.error("Supabase Realtime subscription failed:", err)
+      }
+    }
+
+    return () => {
+      if (localChannel) {
+        localChannel.close()
+      }
+      if (isSupabaseConfigured && supabaseSubscription) {
+        supabase.removeChannel(supabaseSubscription)
+      }
+    }
+  }, [isAdminLoggedIn])
 
   // 2. Fetch all participants and compute dashboard stats
   const fetchDashboardData = async () => {
@@ -383,6 +494,111 @@ export const Admin: React.FC = () => {
           </Button>
         </div>
 
+        {/* Live Visitor Analytics Section */}
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 bg-rose-50 text-rose-600 rounded-xl">
+                <Activity className="w-5 h-5 animate-pulse" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-slate-800">Live Traffic & Analytics</h2>
+                <p className="text-xs text-slate-400">
+                  Real-time activity tracking on /registration/bytechhackathon
+                </p>
+              </div>
+            </div>
+            <div className="inline-flex self-start sm:self-auto items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-wider">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+              Live Stream
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Stats Grid */}
+            <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {/* Views Card */}
+              <div className="bg-slate-50/50 p-5 rounded-xl border border-slate-100 flex flex-col justify-between relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Page Views</span>
+                  <div className="p-2 bg-emerald-50 rounded-lg text-emerald-600">
+                    <Eye className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="mt-4 flex items-baseline gap-2">
+                  <span className="text-3xl font-extrabold text-slate-800">{analytics.views}</span>
+                  <span className="text-xs text-slate-400">total visits</span>
+                </div>
+                <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-100/10 rounded-full blur-xl pointer-events-none" />
+              </div>
+
+              {/* Clicks Card */}
+              <div className="bg-slate-50/50 p-5 rounded-xl border border-slate-100 flex flex-col justify-between relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Clicks Count</span>
+                  <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+                    <MousePointerClick className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="mt-4 flex items-baseline gap-2">
+                  <span className="text-3xl font-extrabold text-slate-800">{analytics.clicks}</span>
+                  <span className="text-xs text-slate-400">interactions</span>
+                </div>
+                <div className="absolute top-0 right-0 w-24 h-24 bg-blue-100/10 rounded-full blur-xl pointer-events-none" />
+              </div>
+
+              {/* CTR Card */}
+              <div className="bg-slate-50/50 p-5 rounded-xl border border-slate-100 flex flex-col justify-between relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Conversion Ratio (CTR)</span>
+                  <div className="p-2 bg-purple-50 rounded-lg text-purple-600">
+                    <Users className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="mt-4 flex items-baseline gap-2">
+                  <span className="text-3xl font-extrabold text-slate-800">
+                    {analytics.views > 0 ? ((analytics.clicks / analytics.views) * 100).toFixed(1) : '0.0'}%
+                  </span>
+                  <span className="text-xs text-slate-400">click-throughs</span>
+                </div>
+                <div className="absolute top-0 right-0 w-24 h-24 bg-purple-100/10 rounded-full blur-xl pointer-events-none" />
+              </div>
+            </div>
+
+            {/* Live Activity Stream */}
+            <div className="bg-slate-50/50 p-5 rounded-xl border border-slate-100 flex flex-col justify-between h-[160px] lg:h-auto min-h-[160px]">
+              <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
+                Live Activity Log
+              </div>
+              <div className="flex-grow overflow-y-auto no-scrollbar space-y-2 max-h-[120px] pr-1">
+                {activityLog.length === 0 ? (
+                  <div className="h-full flex items-center justify-center text-xs text-slate-400 italic">
+                    Awaiting live traffic...
+                  </div>
+                ) : (
+                  activityLog.map((log) => (
+                    <div key={log.id} className="flex items-center justify-between text-xs py-1.5 px-2.5 bg-white border border-slate-100 rounded-lg shadow-2xs">
+                      <div className="flex items-center gap-2">
+                        {log.type === 'view' ? (
+                          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        ) : (
+                          <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                        )}
+                        <span className="font-semibold text-slate-700">
+                          {log.type === 'view' ? 'Page Visited' : 'User Clicked'}
+                        </span>
+                      </div>
+                      <span className="font-mono text-slate-400 text-[10px]">
+                        {formatTimeWithMs(log.timestamp)}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Dashboard Metrics Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           
@@ -574,14 +790,22 @@ export const Admin: React.FC = () => {
                       </td>
                       {/* Action */}
                       <td className="py-4 px-6 text-center">
-                        <a
-                          href={getWhatsAppLink(p)}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors focus:outline-none"
-                        >
-                          <MessageSquare className="w-3.5 h-3.5" /> Chat
-                        </a>
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => setSelectedParticipant(p)}
+                            className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-primary-700 bg-primary-50 hover:bg-primary-100 transition-colors focus:outline-none cursor-pointer"
+                          >
+                            <Eye className="w-3.5 h-3.5" /> View
+                          </button>
+                          <a
+                            href={getWhatsAppLink(p)}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition-colors focus:outline-none"
+                          >
+                            <MessageSquare className="w-3.5 h-3.5" /> Chat
+                          </a>
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -595,6 +819,187 @@ export const Admin: React.FC = () => {
       </main>
 
       <Footer />
+
+      {/* Participant Details Modal */}
+      {selectedParticipant && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            onClick={() => setSelectedParticipant(null)}
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs"
+          />
+
+          {/* Modal Content */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-2xl overflow-hidden relative z-10 max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200"
+          >
+            {/* Header */}
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">
+                  {selectedParticipant.full_name}
+                </h3>
+                <p className="text-xs font-mono font-bold text-slate-400 mt-1">
+                  ID: {selectedParticipant.participant_id || 'PENDING'}
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedParticipant(null)}
+                className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Scrollable Body */}
+            <div className="p-6 overflow-y-auto no-scrollbar space-y-6">
+              
+              {/* Contact Info */}
+              <div>
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Contact Information</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">Email Address</span>
+                    <span className="text-sm font-semibold text-slate-700 break-all">{selectedParticipant.email}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">WhatsApp Number</span>
+                    <span className="text-sm font-semibold text-slate-700">{selectedParticipant.whatsapp_number}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">Contact Number</span>
+                    <span className="text-sm font-semibold text-slate-700">{selectedParticipant.contact_number}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">Registration Date</span>
+                    <span className="text-sm font-semibold text-slate-700">
+                      {new Date(selectedParticipant.created_at).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Academic Info */}
+              <div>
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Academic Details</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                  <div className="sm:col-span-2">
+                    <span className="text-[10px] text-slate-400 block">College Name</span>
+                    <span className="text-sm font-semibold text-slate-700">{selectedParticipant.college_name}</span>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <span className="text-[10px] text-slate-400 block">University Name</span>
+                    <span className="text-sm font-semibold text-slate-700">{selectedParticipant.university_name}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">Degree</span>
+                    <span className="text-sm font-semibold text-slate-700">{selectedParticipant.degree}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">Branch</span>
+                    <span className="text-sm font-semibold text-slate-700">{selectedParticipant.branch}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">Year of Study</span>
+                    <span className="text-sm font-semibold text-slate-700">{selectedParticipant.study_year}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Technical Profile & Skills */}
+              <div>
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Professional Profiles & Skills</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">GitHub Profile</span>
+                    {selectedParticipant.github_url ? (
+                      <a
+                        href={selectedParticipant.github_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-sm font-semibold text-primary-600 hover:underline break-all"
+                      >
+                        {selectedParticipant.github_url}
+                      </a>
+                    ) : (
+                      <span className="text-sm text-slate-400 italic">Not provided</span>
+                    )}
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">LinkedIn Profile</span>
+                    {selectedParticipant.linkedin_url ? (
+                      <a
+                        href={selectedParticipant.linkedin_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-sm font-semibold text-primary-600 hover:underline break-all"
+                      >
+                        {selectedParticipant.linkedin_url}
+                      </a>
+                    ) : (
+                      <span className="text-sm text-slate-400 italic">Not provided</span>
+                    )}
+                  </div>
+                  <div className="sm:col-span-2">
+                    <span className="text-[10px] text-slate-400 block">Skills</span>
+                    <div className="flex flex-wrap gap-1.5 mt-1.5">
+                      {selectedParticipant.skills.split(',').map((skill, idx) => (
+                        <span
+                          key={idx}
+                          className="px-2 py-0.5 bg-slate-200/60 text-slate-700 rounded-md text-xs font-medium"
+                        >
+                          {skill.trim()}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Details */}
+              <div>
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Payment Details</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50/50 p-4 rounded-xl border border-slate-100">
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">Payment ID</span>
+                    <span className="text-sm font-mono font-bold text-slate-700 break-all">
+                      {selectedParticipant.payment_id || '-'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 block">Payment Status</span>
+                    <span
+                      className={`inline-flex px-2.5 py-0.5 text-xs font-bold rounded-full uppercase tracking-wider mt-1 ${
+                        selectedParticipant.payment_status === 'paid'
+                          ? 'text-emerald-800 bg-emerald-50'
+                          : 'text-amber-800 bg-amber-50'
+                      }`}
+                    >
+                      {selectedParticipant.payment_status}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-slate-100 flex justify-end bg-slate-50/50">
+              <Button
+                variant="outline"
+                onClick={() => setSelectedParticipant(null)}
+                className="px-4 py-2 text-sm cursor-pointer"
+              >
+                Close
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   )
 }
