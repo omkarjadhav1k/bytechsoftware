@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
         Authorization: `Bearer ${resendApiKey}`,
       },
       body: JSON.stringify({
-        from: "ByTech Hackathon <onboarding@resend.dev>",
+        from: process.env.RESEND_FROM_EMAIL || "ByTech Hackathon <noreply@bytechsoftware.com>",
         to,
         subject,
         html,
