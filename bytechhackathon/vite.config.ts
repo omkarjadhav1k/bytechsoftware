@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
+import nodemailer from 'nodemailer'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -26,25 +27,52 @@ export default defineConfig(({ mode }) => {
               req.on('end', async () => {
                 try {
                   const { to, subject, html } = JSON.parse(body)
-                  const resendApiKey = env.VITE_RESEND_API_KEY || 're_9GgGirVM_5cwX1X5mf5ciTqBngLygGr7Y'
+                  const gmailUser = env.GMAIL_USER || 'bytechsoftwares.support@gmail.com'
+                  const gmailPass = env.GMAIL_PASS
 
-                  const emailResponse = await fetch("https://api.resend.com/emails", {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                      Authorization: `Bearer ${resendApiKey}`,
-                    },
-                    body: JSON.stringify({
-                      from: "ByTech Hackathon <no-reply@resend.dev>",
+                  if (gmailPass) {
+                    // Send via Gmail SMTP
+                    const transporter = nodemailer.createTransport({
+                      host: 'smtp.gmail.com',
+                      port: 465,
+                      secure: true,
+                      auth: {
+                        user: gmailUser,
+                        pass: gmailPass,
+                      },
+                    })
+
+                    const info = await transporter.sendMail({
+                      from: `"ByTech Software Solutions" <${gmailUser}>`,
                       to,
                       subject,
                       html,
-                    }),
-                  })
+                    })
 
-                  const resData = await emailResponse.json()
-                  res.writeHead(emailResponse.status, { 'Content-Type': 'application/json' })
-                  res.end(JSON.stringify(resData))
+                    res.writeHead(200, { 'Content-Type': 'application/json' })
+                    res.end(JSON.stringify({ success: true, id: info.messageId }))
+                  } else {
+                    // Fallback to Resend (standard Resend sandbox setup)
+                    const resendApiKey = env.VITE_RESEND_API_KEY || 're_9GgGirVM_5cwX1X5mf5ciTqBngLygGr7Y'
+
+                    const emailResponse = await fetch("https://api.resend.com/emails", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${resendApiKey}`,
+                      },
+                      body: JSON.stringify({
+                        from: "ByTech Hackathon <no-reply@resend.dev>",
+                        to,
+                        subject,
+                        html,
+                      }),
+                    })
+
+                    const resData = await emailResponse.json()
+                    res.writeHead(emailResponse.status, { 'Content-Type': 'application/json' })
+                    res.end(JSON.stringify(resData))
+                  }
                 } catch (err: any) {
                   res.writeHead(500, { 'Content-Type': 'application/json' })
                   res.end(JSON.stringify({ error: err.message }))
