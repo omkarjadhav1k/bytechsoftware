@@ -90,7 +90,7 @@ export default defineConfig(({ mode }) => {
                   const { participantId, amount = 1 } = JSON.parse(body)
                   const keyId = env.VITE_RAZORPAY_KEY_ID || "rzp_live_T56Xgtqtsgt6Gf"
                   const keySecret = env.RAZORPAY_KEY_SECRET || "oXYKFt5sbH47T0TL11Cn5WZH"
-                  const amountInPaise = amount * 100
+                  const amountInPaise = amount * 9900
 
                   const response = await fetch("https://api.razorpay.com/v1/orders", {
                     method: "POST",
