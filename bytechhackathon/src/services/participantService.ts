@@ -117,7 +117,7 @@ export const participantService = {
     return {
       order_id: `order_mock_${participantId.substring(0, 8)}_${Math.random().toString(36).substring(2, 6)}`,
       key_id: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_live_T56Xgtqtsgt6Gf',
-      amount: 100 // ₹1 (100 paise)
+      amount: 9900 // ₹99 (9900 paise)
     }
   },
 
