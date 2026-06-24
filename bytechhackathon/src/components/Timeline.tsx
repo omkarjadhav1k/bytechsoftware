@@ -11,37 +11,37 @@ interface TimelineEvent {
 
 const events: TimelineEvent[] = [
   {
-    date: "June 22, 2026",
+    date: "June 24, 2026",
     title: "Registrations Open",
-    description: "Secure your individual slot for ₹1 and begin prepping your IDE.",
+    description: "Secure your individual slot for ₹99 and begin prepping your IDE.",
     icon: <UserCheck className="w-5 h-5" />
   },
   {
-    date: "July 8, 2026",
+    date: "June 30, 2026",
     title: "Registrations Close",
     description: "Last day to register. Make sure your environment variables and Git configs are ready.",
     icon: <Calendar className="w-5 h-5" />
   },
   {
-    date: "July 10, 2026 (05:45 PM)",
+    date: "July 5, 2026 (05:45 PM)",
     title: "Verification Queue",
     description: "Log in to the dashboard portal to verify your payment status and check-in.",
     icon: <CheckCircle className="w-5 h-5" />
   },
   {
-    date: "July 10, 2026 (06:00 PM)",
+    date: "July 5, 2026 (06:00 PM)",
     title: "Coding Kick-off",
     description: "The official problem statements are released. The 3-hour coding marathon begins!",
     icon: <Rocket className="w-5 h-5" />
   },
   {
-    date: "July 10, 2026 (09:00 PM)",
+    date: "July 5, 2026 (09:00 PM)",
     title: "Submission Window Closes",
     description: "Coding stops. Push your codebase to public GitHub repos and submit links.",
     icon: <Flag className="w-5 h-5" />
   },
   {
-    date: "July 15, 2026",
+    date: "July 10, 2026",
     title: "Results Declaration",
     description: "Evaluation results, finalist certificates, and cash distributions are published.",
     icon: <Trophy className="w-5 h-5" />

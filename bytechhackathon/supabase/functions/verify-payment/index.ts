@@ -227,7 +227,7 @@ serve(async (req) => {
               </div>
               <div class="content">
                 <p class="greeting">Hi ${participant.full_name},</p>
-                <p>Thank you for registering! Your payment of <strong>₹1</strong> has been successfully processed, and your registration is confirmed.</p>
+                <p>Thank you for registering! Your payment of <strong>₹99</strong> has been successfully processed, and your registration is confirmed.</p>
                 
                 <div class="badge" align="center">
                   <div class="badge-title">Your Unique Participant ID</div>
@@ -238,7 +238,7 @@ serve(async (req) => {
                 <table class="details-table">
                   <tr>
                     <td class="label">Date</td>
-                    <td class="value">July 10, 2026</td>
+                    <td class="value">July 5, 2026</td>
                   </tr>
                   <tr>
                     <td class="label">Duration</td>

@@ -456,7 +456,7 @@ function getEmailHtml(participant: Participant): string {
           <p style="margin:5px 0 0 0; font-size:14px; opacity:0.9;">Registration Confirmed - ByTech Software Solutions</p>
         </div>
         <p style="font-size:16px; margin-top:28px;">Hi ${participant.full_name},</p>
-        <p>Thank you for registering! Your payment of <strong>₹1</strong> has been successfully processed, and your registration is confirmed.</p>
+        <p>Thank you for registering! Your payment of <strong>₹99</strong> has been successfully processed, and your registration is confirmed.</p>
         <div class="badge">
           <div style="font-size:11px; color:#6b7280; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Your Unique Participant ID</div>
           <div style="font-size:22px; color:#1e3a8a; font-weight:bold; font-family:monospace;">${participant.participant_id}</div>

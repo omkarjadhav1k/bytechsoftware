@@ -505,7 +505,7 @@ export const Register: React.FC = () => {
                         <p className="text-slate-500 text-xs mt-0.5">Pay securely via Razorpay Checkout</p>
                       </div>
                     </div>
-                    <span className="text-2xl font-extrabold text-slate-900">₹1</span>
+                    <span className="text-2xl font-extrabold text-slate-900">₹99</span>
                   </div>
                 </motion.div>
               )}
@@ -545,7 +545,7 @@ export const Register: React.FC = () => {
                     isLoading={isSubmitting}
                     className="bg-emerald-600 hover:bg-emerald-700 cursor-pointer shadow-lg shadow-emerald-500/20"
                   >
-                    Proceed to Payment (₹1)
+                    Proceed to Payment (₹99)
                   </Button>
                 </div>
               )}

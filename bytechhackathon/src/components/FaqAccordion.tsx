@@ -18,11 +18,11 @@ const faqs: FAQItem[] = [
   },
   {
     question: "What is the registration fee and how do I pay?",
-    answer: "The registration fee is ₹1. You can pay securely using our integrated Razorpay gateway via credit/debit cards, UPI, net banking, or wallets."
+    answer: "The registration fee is ₹99. You can pay securely using our integrated Razorpay gateway via credit/debit cards, UPI, net banking, or wallets."
   },
   {
     question: "What is the duration of the hackathon?",
-    answer: "This is a fast-paced 3-hour virtual sprint. Coding starts on July 10, 2026 at 06:00 PM and ends at 09:00 PM sharp. Submissions must be uploaded immediately upon conclusion."
+    answer: "This is a fast-paced 3-hour virtual sprint. Coding starts on July 5, 2026 at 06:00 PM and ends at 09:00 PM sharp. Submissions must be uploaded immediately upon conclusion."
   },
   {
     question: "How do I submit my project?",
