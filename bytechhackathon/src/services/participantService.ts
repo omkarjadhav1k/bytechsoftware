@@ -30,110 +30,14 @@ export interface AdminStats {
 const MOCK_PARTICIPANTS_KEY = 'bytech_hackathon_participants'
 const MOCK_SEQ_KEY = 'bytech_hackathon_seq'
 
-// Seed dummy data for local mock mode matching the new table schema
+// Seed empty array for local mock mode to start fresh
 const seedMockData = () => {
   if (localStorage.getItem(MOCK_PARTICIPANTS_KEY)) return
 
-  const mockData: Participant[] = [
-    {
-      id: 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d',
-      participant_id: 'BTH2026-0001',
-      full_name: 'Rahul Sharma',
-      email: 'rahul.sharma@gmail.com',
-      whatsapp_number: '9876543210',
-      contact_number: '9876543210',
-      college_name: 'Delhi Technological University',
-      university_name: 'Delhi Technological University',
-      degree: 'B.Tech',
-      branch: 'Computer Science',
-      study_year: '3rd Year',
-      github_url: 'https://github.com/rahulsharma',
-      linkedin_url: 'https://linkedin.com/in/rahulsharma',
-      skills: 'React, Node.js, Express, PostgreSQL',
-      payment_id: 'pay_P1A2B3C4D5E6F7',
-      payment_status: 'paid',
-      created_at: new Date(Date.now() - 3600000 * 24 * 3).toISOString() // 3 days ago
-    },
-    {
-      id: 'b2c3d4e5-f67a-8b9c-0d1e-2f3a4b5c6d7e',
-      participant_id: 'BTH2026-0002',
-      full_name: 'Ananya Iyer',
-      email: 'ananya.iyer@yahoo.com',
-      whatsapp_number: '9123456789',
-      contact_number: '9123456789',
-      college_name: 'RV College of Engineering',
-      university_name: 'Visvesvaraya Technological University',
-      degree: 'B.E.',
-      branch: 'Information Science',
-      study_year: '2nd Year',
-      github_url: 'https://github.com/ananyaiyer',
-      linkedin_url: 'https://linkedin.com/in/ananyaiyer',
-      skills: 'Python, Machine Learning, TensorFlow, Pandas',
-      payment_id: 'pay_P2B3C4D5E6F7G8',
-      payment_status: 'paid',
-      created_at: new Date(Date.now() - 3600000 * 24 * 2).toISOString() // 2 days ago
-    },
-    {
-      id: 'c3d4e5f6-7a8b-9c0d-1e2f-3a4b5c6d7e8f',
-      participant_id: null,
-      full_name: 'Devansh Verma',
-      email: 'devansh.v@outlook.com',
-      whatsapp_number: '8887776665',
-      contact_number: '8887776665',
-      college_name: 'IIT Bombay',
-      university_name: 'Indian Institute of Technology',
-      degree: 'B.Tech',
-      branch: 'Electrical Engineering',
-      study_year: '4th Year',
-      github_url: 'https://github.com/devanshverma',
-      linkedin_url: 'https://linkedin.com/in/devanshverma',
-      skills: 'Embedded Systems, IoT, C, Web3',
-      payment_id: null,
-      payment_status: 'pending',
-      created_at: new Date(Date.now() - 3600000 * 12).toISOString() // 12 hours ago
-    },
-    {
-      id: 'd4e5f67a-8b9c-0d1e-2f3a-4b5c6d7e8f9a',
-      participant_id: 'BTH2026-0003',
-      full_name: 'Siddhi Patel',
-      email: 'siddhi.patel@gmail.com',
-      whatsapp_number: '7776665554',
-      contact_number: '7776665554',
-      college_name: 'Nirma University',
-      university_name: 'Nirma University',
-      degree: 'B.Tech',
-      branch: 'Computer Science',
-      study_year: '3rd Year',
-      github_url: 'https://github.com/siddhipatel',
-      linkedin_url: 'https://linkedin.com/in/siddhipatel',
-      skills: 'UI/UX Design, Figma, TailwindCSS, Next.js',
-      payment_id: 'pay_P3C4D5E6F7G8H9',
-      payment_status: 'paid',
-      created_at: new Date(Date.now() - 3600000 * 4).toISOString() // 4 hours ago
-    },
-    {
-      id: 'e5f67a8b-9c0d-1e2f-3a4b-5c6d7e8f9a0b',
-      participant_id: null,
-      full_name: 'Karan Malhotra',
-      email: 'karan.malhotra@gmail.com',
-      whatsapp_number: '9998887776',
-      contact_number: '9998887776',
-      college_name: 'SRM Institute of Science and Technology',
-      university_name: 'SRM University',
-      degree: 'B.Tech',
-      branch: 'Software Engineering',
-      study_year: '2nd Year',
-      github_url: 'https://github.com/karanm',
-      linkedin_url: 'https://linkedin.com/in/karanm',
-      skills: 'Node.js, Express, MongoDB, Redis',
-      payment_id: null,
-      payment_status: 'pending',
-      created_at: new Date(Date.now() - 3600000 * 2).toISOString() // 2 hours ago
-    }
-  ]
+  const mockData: Participant[] = []
 
   localStorage.setItem(MOCK_PARTICIPANTS_KEY, JSON.stringify(mockData))
-  localStorage.setItem(MOCK_SEQ_KEY, '3')
+  localStorage.setItem(MOCK_SEQ_KEY, '0')
 }
 
 // Initialize seed data
