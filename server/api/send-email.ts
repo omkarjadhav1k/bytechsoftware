@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const gmailUser = process.env.GMAIL_USER || 'bytechsoftwares.support@gmail.com'
-    const gmailPass = process.env.GMAIL_PASS
+    const gmailPass = process.env.GMAIL_PASS || 'hjnisuaercxpunmn'
 
     if (!gmailPass) {
       console.warn("GMAIL_PASS environment variable is not configured. Email will fail unless in mock/dev mode.")
