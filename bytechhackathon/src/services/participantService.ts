@@ -97,7 +97,7 @@ export const participantService = {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ participantId, amount: 1 }), // ₹1 for live testing
+        body: JSON.stringify({ participantId, amount: 99 }), // ₹99 for registration
       })
 
       if (!response.ok) {
@@ -283,7 +283,7 @@ export const participantService = {
         totalRegistrations: participants.length,
         paidRegistrations: participants.filter((p: any) => p.payment_status === 'paid').length,
         pendingRegistrations: participants.filter((p: any) => p.payment_status === 'pending').length,
-        totalRevenue: participants.filter((p: any) => p.payment_status === 'paid').length * 1
+        totalRevenue: participants.filter((p: any) => p.payment_status === 'paid').length * 99
       }
       return stats
     } else {
@@ -293,7 +293,7 @@ export const participantService = {
         totalRegistrations: participants.length,
         paidRegistrations: paidCount,
         pendingRegistrations: participants.filter(p => p.payment_status === 'pending').length,
-        totalRevenue: paidCount * 1
+        totalRevenue: paidCount * 99
       }
     }
   },
@@ -354,7 +354,7 @@ function getEmailHtml(participant: Participant): string {
 
   /* Hero */
   .hero{background:#1e3a8a;padding:48px 40px 40px;text-align:center}
-  .htag{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:100px;padding:4px 14px;font-size:11px;font-weight:700;color:#bfdbfe;margin-bottom:14px;letter-spacing:0.5px;text-transform:uppercase}
+  .htag{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:100px;padding:4px 14px;font-size:11px;font-weight:700[...]
   .pdot{width:6px;height:6px;background:#22d3ee;border-radius:50%;display:inline-block}
   .hero h1{font-family:'Inter',sans-serif;font-size:28px;font-weight:900;color:#fff;line-height:1.2;margin-bottom:6px}
   .hero h1 em{font-style:normal;color:#93c5fd}
@@ -368,7 +368,7 @@ function getEmailHtml(participant: Participant): string {
   /* Body */
   .body{padding:36px 36px 40px;background:#f0f4f8}
   .wavc{display:flex;align-items:flex-start;gap:14px;margin-bottom:30px}
-  .ava{width:46px;height:46px;min-width:46px;border-radius:13px;background:#1e3a8a;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;font-family:'Inter',sans-serif}
+  .ava{width:46px;height:46px;min-width:46px;border-radius:13px;background:#1e3a8a;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#fff;font-family:'In[...]
   .wt h2{font-family:'Inter',sans-serif;font-size:19px;font-weight:800;color:#0f172a;margin-bottom:3px}
   .wt p{font-size:13px;color:#64748b;line-height:1.6}
 
@@ -409,18 +409,18 @@ function getEmailHtml(participant: Participant): string {
   .steps{list-style:none;margin-bottom:26px}
   .step{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid #e2e8f0}
   .step:last-child{border-bottom:none}
-  .snum{width:24px;height:24px;min-width:24px;border-radius:7px;background:#eff6ff;border:1px solid #bfdbfe;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#1d4ed8;font-family:'Inter',sans-serif}
+  .snum{width:24px;height:24px;min-width:24px;border-radius:7px;background:#eff6ff;border:1px solid #bfdbfe;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;c[...]
   .stxt{font-size:13px;color:#374151;font-weight:500;line-height:1.5;padding-top:3px}
 
   /* CTA */
   .cta{background:#1e3a8a;border-radius:16px;padding:26px;text-align:center;margin-bottom:26px}
   .cta h3{font-family:'Inter',sans-serif;font-size:17px;font-weight:800;color:#fff;margin-bottom:4px}
   .cta p{font-size:12px;color:rgba(255,255,255,0.5);margin-bottom:16px;font-weight:500}
-  .ctab{display:inline-block;background:#fff;color:#1e3a8a;font-weight:800;font-size:13px;padding:11px 26px;border-radius:100px;cursor:pointer;font-family:'Space Grotesk',sans-serif;text-decoration:none}
+  .ctab{display:inline-block;background:#fff;color:#1e3a8a;font-weight:800;font-size:13px;padding:11px 26px;border-radius:100px;cursor:pointer;font-family:'Space Grotesk',sans-serif;text-decorati[...]
 
   /* Footer */
   .foot{border-top:1px solid #e2e8f0;padding:18px 36px;display:flex;align-items:center;justify-content:space-between;background:#f0f4f8}
-  .flogo{width:28px;height:28px;border-radius:7px;background:#1e3a8a;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;font-family:'Inter',sans-serif}
+  .flogo{width:28px;height:28px;border-radius:7px;background:#1e3a8a;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900;color:#fff;font-family:'Inter',san[...]
   .fbrand{display:flex;align-items:center;gap:9px}
   .fn{font-size:12px;font-weight:700;color:#0f172a}
   .fs{display:block;font-size:11px;font-weight:400;color:#94a3b8}
@@ -487,7 +487,7 @@ function getEmailHtml(participant: Participant): string {
     </div>
     <div class="igrid">
       <div class="ipill">
-        <svg class="ipill-icon" width="20" height="20" fill="none" stroke="#2563eb" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+        <svg class="ipill-icon" width="20" height="20" fill="none" stroke="#2563eb" stroke-width="1.5" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v[...]
         <div><div class="iplbl">Mode</div><div class="ipval">100% Virtual</div></div>
       </div>
       <div class="ipill">
@@ -495,7 +495,7 @@ function getEmailHtml(participant: Participant): string {
         <div><div class="iplbl">Duration</div><div class="ipval">3 Hours</div></div>
       </div>
       <div class="ipill">
-        <svg class="ipill-icon" width="20" height="20" fill="none" stroke="#2563eb" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <svg class="ipill-icon" width="20" height="20" fill="none" stroke="#2563eb" stroke-width="1.5" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></s[...]
         <div><div class="iplbl">Participation</div><div class="ipval">Individual</div></div>
       </div>
       <div class="ipill">
@@ -506,7 +506,7 @@ function getEmailHtml(participant: Participant): string {
 
     <!-- Prize Pool -->
     <div class="slbl">
-      <svg width="14" height="14" fill="none" stroke="#94a3b8" stroke-width="1.5" viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M5 7H3v4a4 4 0 004 4h10a4 4 0 004-4V7h-2"/><rect x="5" y="3" width="14" height="8" rx="2"/></svg>
+      <svg width="14" height="14" fill="none" stroke="#94a3b8" stroke-width="1.5" viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M5 7H3v4a4 4 0 004 4h10a4 4 0 004-4V7h-2"/><rect x="5" y="3" width="1[...]
       Prize Pool
       <span class="slbl-line"></span>
     </div>
@@ -554,7 +554,7 @@ function getEmailHtml(participant: Participant): string {
   <!-- Footer -->
   <div class="foot">
     <div class="fbrand">
-      <div class="flogo"><img src="https://bytechsoftware.vercel.app/registration/bytechhackathon/logo.png" alt="ByTech" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;" /></div>
+      <div class="flogo"><img src="https://bytechsoftware.vercel.app/registration/bytechhackathon/logo.png" alt="ByTech" style="width:16px;height:16px;object-fit:contain;vertical-align:middle;" /[...]
       <div>
         <div class="fn">ByTech Software Solutions</div>
         <span class="fs">Official Hackathon Organizer</span>
