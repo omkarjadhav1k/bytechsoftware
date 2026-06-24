@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/registration/bytechhackathon/:path*",
+      "destination": "/registration/bytechhackathon/index.html"
+    }
+  ]
+}
