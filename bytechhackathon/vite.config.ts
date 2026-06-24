@@ -81,7 +81,7 @@ export default defineConfig(({ mode }) => {
                     }),
                   })
 
-                  const orderData = await response.json()
+                  const orderData = await response.json() as any
                   if (!response.ok) {
                     res.writeHead(response.status, { 'Content-Type': 'application/json' })
                     res.end(JSON.stringify(orderData))
