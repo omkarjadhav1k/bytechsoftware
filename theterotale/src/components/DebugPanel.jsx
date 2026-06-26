@@ -31,10 +31,32 @@ export default function DebugPanel() {
       setShowPanel(true);
     }
 
-    // Load initial mappings from local storage
+    // Load initial mappings from local storage and self-heal if necessary
     const saved = localStorage.getItem('custom_dish_mappings');
     if (saved) {
-      setCustomMappings(JSON.parse(saved));
+      try {
+        const parsed = JSON.parse(saved);
+        let corrected = false;
+        const updated = {};
+
+        Object.keys(parsed).forEach(key => {
+          let val = parsed[key];
+          if (val && typeof val === 'string' && val.startsWith('/photo/')) {
+            val = `/theterotale${val}`;
+            corrected = true;
+          }
+          updated[key] = val;
+        });
+
+        if (corrected) {
+          localStorage.setItem('custom_dish_mappings', JSON.stringify(updated));
+          setCustomMappings(updated);
+        } else {
+          setCustomMappings(parsed);
+        }
+      } catch (err) {
+        console.error('Failed to parse custom dish mappings:', err);
+      }
     }
   }, []);
 

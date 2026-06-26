@@ -12,7 +12,30 @@ export default function Menu() {
     // Load custom mappings from local storage
     const saved = localStorage.getItem('custom_dish_mappings');
     if (saved) {
-      setCustomMappings(JSON.parse(saved));
+      try {
+        const parsed = JSON.parse(saved);
+        let corrected = false;
+        const updated = {};
+
+        Object.keys(parsed).forEach(key => {
+          let val = parsed[key];
+          // Self-heal stale mappings (convert /photo/... to /theterotale/photo/...)
+          if (val && typeof val === 'string' && val.startsWith('/photo/')) {
+            val = `/theterotale${val}`;
+            corrected = true;
+          }
+          updated[key] = val;
+        });
+
+        if (corrected) {
+          localStorage.setItem('custom_dish_mappings', JSON.stringify(updated));
+          setCustomMappings(updated);
+        } else {
+          setCustomMappings(parsed);
+        }
+      } catch (err) {
+        console.error('Failed to parse custom dish mappings:', err);
+      }
     }
 
     // Listen for custom photo mapper updates in real-time
