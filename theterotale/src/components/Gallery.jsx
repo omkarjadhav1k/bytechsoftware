@@ -33,7 +33,7 @@ export default function Gallery() {
     }
 
     return {
-      src: `/photo/${filename}`,
+      src: `/theterotale/photo/${filename}`,
       category,
       caption: `${caption} #${index + 1}`
     };

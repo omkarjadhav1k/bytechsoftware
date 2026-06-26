@@ -43,7 +43,7 @@ export default function DebugPanel() {
   const handleMapPhoto = (dishName, filename) => {
     const updated = {
       ...customMappings,
-      [dishName]: `/photo/${filename}`
+      [dishName]: `/theterotale/photo/${filename}`
     };
     setCustomMappings(updated);
     localStorage.setItem('custom_dish_mappings', JSON.stringify(updated));
@@ -222,7 +222,7 @@ export default function DebugPanel() {
               <div style={{ padding: '16px', overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', flexGrow: 1 }}>
                 {highResPhotos.map((photo, index) => {
                   const dishName = dishes.find(d => d.id === activeDishId)?.name;
-                  const isCurrent = customMappings[dishName] === `/photo/${photo}`;
+                  const isCurrent = customMappings[dishName] === `/theterotale/photo/${photo}`;
                   
                   return (
                     <div 
@@ -238,7 +238,7 @@ export default function DebugPanel() {
                       }}
                     >
                       <img 
-                        src={`/photo/${photo}`} 
+                        src={`/theterotale/photo/${photo}`} 
                         alt="" 
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                       />

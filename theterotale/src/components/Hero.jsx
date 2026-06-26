@@ -3,7 +3,7 @@ import { Star, MapPin, Compass, ShieldCheck } from 'lucide-react';
 import photos from '../data/photos.json';
 
 export default function Hero() {
-  const heroImgUrl = "/photo/PhotoshopExtension_Image (4).png";
+  const heroImgUrl = "/theterotale/photo/PhotoshopExtension_Image (4).png";
 
   const scrollToSection = (id) => {
     const el = document.getElementById(id);

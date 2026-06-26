@@ -26,7 +26,7 @@ export default function Menu() {
   // Find actual image filenames from the JSON index that match specific patterns
   const getImageByPattern = (pattern, fallbackIdx) => {
     const match = photos.find(p => p.includes(pattern));
-    return match ? `/photo/${match}` : `/photo/${photos[fallbackIdx % photos.length]}`;
+    return match ? `/theterotale/photo/${match}` : `/theterotale/photo/${photos[fallbackIdx % photos.length]}`;
   };
 
   const menuItems = [
