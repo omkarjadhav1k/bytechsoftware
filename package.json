@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite dev",
-    "build": "cd bytechhackathon && npm install && npm run build && cd .. && node copy-hackathon.js && vite build",
+    "build": "cd bytechhackathon && npm install && npm run build && cd .. && node copy-hackathon.js && cd theterotale && npm install && npm run build && cd .. && node copy-terotale.js && vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
